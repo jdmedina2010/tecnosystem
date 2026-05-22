@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<script src="layout.js"></script>
+
+<script>
+    
+let user = null;
+
+try {
+    user = JSON.parse(localStorage.getItem('usuario'));
+} catch (e) {}
+
+if (!user) {
+    window.location = '/login.html';
+}
+cargarLayout(`
+<h2>Nueva Orden</h2>
+
+<div class="card p-4 shadow">
+
+<h5>Cliente</h5>
+<input id="nombre" class="form-control mb-2" placeholder="Nombre">
+<input id="telefono" class="form-control mb-3" placeholder="Teléfono">
+
+<h5>Equipo</h5>
+<input id="marca" class="form-control mb-2" placeholder="Marca">
+<input id="modelo" class="form-control mb-2" placeholder="Modelo">
+<input id="serial" class="form-control mb-3" placeholder="Serial">
+
+<h5>Descripción</h5>
+<input id="descripcion" class="form-control mb-3" placeholder="Descripción">
+
+<button onclick="guardar()" class="btn btn-primary w-100">
+💾 Guardar Orden
+</button>
+
+</div>
+`);
+
+async function guardar() {
+
+    // 🔴 VALIDACIÓN
+    if (!nombre.value || !telefono.value || !serial.value) {
+        alert("Completa los campos obligatorios");
+        return;
+    }
+
+    try {
+
+        // 👤 CLIENTE
+        let c = await fetch('/clientes',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+                nombre:nombre.value,
+                telefono:telefono.value
+            })
+        }).then(r=>r.json());
+
+        // 🖥 EQUIPO
+        let e = await fetch('/equipos',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+                marca:marca.value,
+                modelo:modelo.value,
+                serial:serial.value,
+                tipo: 'COMPUTADOR'
+            })
+        }).then(r=>r.json());
+
+        // ❌ ERROR SERIAL DUPLICADO
+        if (e.error) {
+            alert(e.error);
+            return;
+        }
+
+        // 📋 ORDEN
+let o = await fetch('/ordenes', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+        cliente_id:c.id,
+        equipo_id:e.id,
+        descripcion:descripcion.value,
+        tipo_servicio:'NUEVO'
+    })
+}).then(r => r.json());
+
+
+// ✅ ABRIR TICKET
+window.open(
+    '/ordenes/ticket/' + o.orden_id,
+    '_blank'
+);
+
+
+// ✅ MENSAJE
+alert("✅ Orden creada N°: " + o.orden_id);
+
+
+// 🧹 LIMPIAR FORMULARIO
+nombre.value = '';
+telefono.value = '';
+marca.value = '';
+modelo.value = '';
+serial.value = '';
+descripcion.value = '';
+
+
+// 🔄 RECARGAR
+location.reload();
+
+        // ✅ ÉXITO
+        alert("✅ Orden creada N°: " + o.orden_id);
+
+        // 🧹 LIMPIAR FORMULARIO
+        nombre.value = '';
+        telefono.value = '';
+        marca.value = '';
+        modelo.value = '';
+        serial.value = '';
+        descripcion.value = '';
+
+    } catch (error) {
+        alert("Error al guardar");
+        console.error(error);
+    }
+}
+</script>
+
+</body>
+</html>

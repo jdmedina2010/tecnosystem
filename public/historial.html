@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<script src="layout.js"></script>
+
+<script>
+
+cargarLayout(`
+<h2>Historial por Serial</h2>
+
+<div class="card p-3 shadow mb-3">
+
+<input id="serial" class="form-control mb-2" placeholder="Ingresa Serial">
+
+<button onclick="buscar()" class="btn btn-primary">
+🔍 Buscar
+</button>
+
+</div>
+
+<table class="table table-bordered">
+<thead class="table-dark">
+<tr>
+<th># Orden</th>
+<th>Cliente</th>
+<th>Estado</th>
+<th>Fecha</th>
+<th>Diagnóstico</th>
+<th>Observaciones</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+`);
+
+function buscar() {
+
+if (!serial.value) {
+    alert('Ingresa un serial');
+    return;
+}
+
+fetch('/historial/' + serial.value)
+
+.then(r => r.json())
+
+.then(data => {
+
+    console.log(data);
+
+    let t = document.getElementById('tabla');
+
+    t.innerHTML = '';
+
+    // 🔥 VALIDAR ARRAY
+    if (!Array.isArray(data)) {
+
+        t.innerHTML = `
+        <tr>
+            <td colspan="6">
+                Error cargando historial
+            </td>
+        </tr>
+        `;
+
+        return;
+    }
+
+    // 🔥 SIN HISTORIAL
+    if (data.length === 0) {
+
+        t.innerHTML = `
+        <tr>
+            <td colspan="6">
+                No hay historial
+            </td>
+        </tr>
+        `;
+
+        return;
+    }
+
+    // 🔥 RECORRER
+    data.forEach(o => {
+
+        t.innerHTML += `
+        <tr>
+
+            <td>${o.id}</td>
+
+            <td>${o.nombre}</td>
+
+            <td>${o.estado}</td>
+
+            <td>${o.fecha_ingreso}</td>
+
+            <td>${o.diagnostico || ''}</td>
+
+            <td>${o.observaciones || ''}</td>
+
+        </tr>
+        `;
+
+    });
+
+});
+}
+
+</script>
+
+</body>
+</html>

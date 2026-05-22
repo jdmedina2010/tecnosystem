@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<script src="layout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+cargarLayout(`
+
+<h2 class="mb-4">Dashboard</h2>
+
+<div class="card shadow p-3 mb-4">
+
+    <h4>Estado de Órdenes</h4>
+
+    <canvas id="graficaEstados"></canvas>
+
+</div>
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+        
+        <div class="card shadow p-3">
+            <h5>Total Órdenes</h5>
+            <h2 id="total">0</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow p-3">
+            <h5>En Cola</h5>
+            <h2 id="cola">0</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow p-3">
+            <h5>Reparadas</h5>
+            <h2 id="reparadas">0</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow p-3">
+            <h5>No Reparadas</h5>
+            <h2 id="norep">0</h2>
+        </div>
+    </div>
+
+</div>
+
+<div class="card shadow p-3">
+
+    <h4>Últimas Órdenes</h4>
+
+    <table class="table">
+
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Equipo</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody id="tabla"></tbody>
+
+    </table>
+
+</div>
+
+`);
+
+fetch('/dashboard-data')
+
+.then(r => r.json())
+
+.then(data => {
+
+    total.innerText = data.total;
+
+    let cola = 0;
+    let reparadas = 0;
+    let norep = 0;
+
+    data.estados.forEach(e => {
+
+        if (e.estado === 'EN COLA') {
+            cola = e.total;
+        }
+
+        if (e.estado === 'REPARADO') {
+            reparadas = e.total;
+        }
+
+        if (e.estado === 'NO REPARADO') {
+            norep = e.total;
+        }
+
+    });
+
+    document.getElementById('cola').innerText = cola;
+    document.getElementById('reparadas').innerText = reparadas;
+    document.getElementById('norep').innerText = norep;
+
+    let t = document.getElementById('tabla');
+
+    data.ultimas.forEach(o => {
+
+        t.innerHTML += `
+        <tr>
+
+            <td>${o.id}</td>
+
+            <td>${o.nombre}</td>
+
+            <td>${o.marca} ${o.modelo}</td>
+
+            <td>${o.estado}</td>
+
+        </tr>
+        `;
+    });
+
+});
+// ================= GRÁFICA =================
+
+let labels = [];
+let valores = [];
+
+data.estados.forEach(e => {
+
+    labels.push(e.estado);
+
+    valores.push(e.total);
+
+});
+
+new Chart(
+    document.getElementById('graficaEstados'),
+    {
+        type: 'doughnut',
+
+        data: {
+            labels: labels,
+
+            datasets: [{
+                data: valores
+            }]
+        }
+    }
+);
+
+</script>
+
+</body>
+</html>

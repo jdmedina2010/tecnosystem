@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<script src="layout.js"></script>
+
+<script>
+
+let user = JSON.parse(localStorage.getItem('usuario'));
+
+cargarLayout(`
+<h2>Lista de Órdenes</h2>
+
+<div class="card p-3 mb-3">
+
+    <div class="row">
+
+        <div class="col-md-6">
+            <input 
+            type="text" 
+            id="buscar"
+            class="form-control"
+            placeholder="Buscar por orden o cliente"
+            onkeyup="filtrar()">
+        </div>
+
+    </div>
+
+</div>
+
+<table class="table table-hover">
+
+<thead class="table-dark">
+<tr>
+<th>#</th>
+<th>Cliente</th>
+<th>Equipo</th>
+<th>Estado</th>
+<th>Acciones</th>
+</tr>
+</thead>
+
+<tbody id="tabla"></tbody>
+
+</table>
+`);
+
+let ordenesGlobal = [];
+function cargar() {
+
+fetch('/ordenes')
+.then(r=>r.json())
+.then(data=>{
+    console.log(data);
+
+    ordenesGlobal = data;
+
+    renderTabla(data);
+});
+}
+
+function cambiar(id, estado) {
+
+if (!confirm('¿Seguro cambiar estado?')) return;
+
+fetch('/ordenes/estado', {
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({ id, estado })
+})
+.then(r=>r.json())
+.then(res=>{
+    if (res.error) {
+        alert('Error');
+        return;
+    }
+    cargar();
+})
+.catch(()=>{
+    alert('Error de conexión');
+});
+
+}
+
+function colorEstado(estado) {
+if (estado === 'EN COLA') return 'bg-secondary';
+if (estado === 'EN REPARACION') return 'bg-warning text-dark';
+if (estado === 'REPARADO') return 'bg-success';
+if (estado === 'NO REPARADO') return 'bg-danger';
+return 'bg-dark';
+}
+
+cargar();
+function renderTabla(data) {
+
+    let t = document.getElementById('tabla');
+
+    t.innerHTML = '';
+
+    data.forEach(o => {
+
+        t.innerHTML += `
+        <tr>
+
+            <td>${o.id}</td>
+
+            <td>${o.nombre}</td>
+
+           <td>
+    ${o.marca} ${o.modelo}
+    <br>
+    <small class="text-muted">
+        S/N: ${o.serial || ''}
+    </small>
+</td>
+
+            <td>${o.estado}</td>
+
+            <td>
+
+                <a href="/ordenes/pdf/${o.id}" 
+                target="_blank"
+                class="btn btn-primary btn-sm">
+
+                PDF
+
+                </a>
+
+            </td>
+
+        </tr>
+        `;
+    });
+}
+function filtrar() {
+
+    let texto = document
+    .getElementById('buscar')
+    .value
+    .toLowerCase()
+    .trim();
+
+    let filtradas = ordenesGlobal.filter(o => {
+
+        // 🔥 VALIDAR CAMPOS
+        let nombre = '';
+
+        if (o.nombre) {
+            nombre = o.nombre.toLowerCase();
+        }
+
+        let serial = '';
+
+        if (o.serial) {
+            serial = o.serial.toLowerCase();
+        }
+
+        let orden = '';
+
+        if (o.id) {
+            orden = o.id.toString();
+        }
+
+        return (
+            nombre.includes(texto) ||
+            serial.includes(texto) ||
+            orden.includes(texto)
+        );
+
+    });
+
+    renderTabla(filtradas);
+}
+    
+
+
+
+</script>
+
+</body>
+</html>
