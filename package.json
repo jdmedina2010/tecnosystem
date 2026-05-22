@@ -8,5 +8,28 @@
     "pdfkit": "^0.18.0",
     "qrcode": "^1.5.4",
     "sqlite3": "^6.0.1"
-  }
+  },
+  "name": "tecnosystem",
+  "engines": {
+  "node": "20.x"
+},
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdmedina2010/tecnosystem.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jdmedina2010/tecnosystem/issues"
+  },
+  "homepage": "https://github.com/jdmedina2010/tecnosystem#readme"
 }
