@@ -392,7 +392,7 @@ app.get('/ordenes/pdf/:id', (req, res) => {
 app.get('/ordenes/qr/:id', async (req, res) => {
     const id = req.params.id;
 
-    const url = `http://192.168.1.60:3000/ordenes/pdf/${id}`;
+    const url = `${req.protocol}://${req.get('host')}/ordenes/pdf/${id}`;
     const qr = await QRCode.toDataURL(url);
 
     res.send(`<img src="${qr}">`);
@@ -486,7 +486,7 @@ app.get('/ordenes/ticket/:id', async (req, res) => {
 
         // ===== QR =====
         const qr = await QRCode.toDataURL(
-            `http://192.168.1.60:3000/ordenes/pdf/${o.id}`
+            `''/ordenes/pdf/${o.id}`
         );
 
         const base64 = qr.replace(
